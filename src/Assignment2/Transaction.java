@@ -25,6 +25,10 @@ public class Transaction implements Comparable<Transaction>{
         return content.indexOf((char)('a' + itemIndex)) >= 0 ;
     }
 
+    public int getNumOfItems() {
+        return numOfItems;
+    }
+
     public List<Integer> items() {
         ArrayList<Integer> items = new ArrayList<>();
         for (char c : content.toCharArray()) {

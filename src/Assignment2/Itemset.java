@@ -17,6 +17,10 @@ public class Itemset implements Comparable<Itemset> {
         }
     }
 
+    public Itemset(int i) {
+        content = Character.toString((char)('a' + i));
+    }
+
     @Override
     public int compareTo(Itemset that) {
         return this.content.compareTo(that.content);

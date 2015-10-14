@@ -13,6 +13,9 @@ import java.util.List;
 public class DataProcessor {
     public static void main(String[] args) {
 
+        // Minimum support value
+        double minsup = 0.144;
+
         // Load data, you should set your own data file location here
         File data = new File("/Users/walker/Desktop/Courses/DataMining/Assignments/2/assignment2-data.txt");
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -41,10 +44,44 @@ public class DataProcessor {
             t.items().forEach(item -> System.out.print(item + " "));
             System.out.println();
         });
+
+        apriori(transactions, minsup);
     }
 
     // The Apriori Algorithm
-    private List<Itemset> Apriori(List<Transaction> transactions, double minsup) {
+    private static List<Itemset> apriori(List<Transaction> transactions, double minsup) {
+
+        if (transactions.isEmpty()) {
+            return null;
+        }
+
+        // Generate frequent 1-itemset
+        ArrayList<Integer> numOfItems = new ArrayList<>();
+        for (int i = 0; i != transactions.get(0).getNumOfItems(); ++i) {
+            numOfItems.add(0);
+        }
+
+        for (Transaction transaction : transactions) {
+            for (int index : transaction.items()) {
+                numOfItems.set(index, numOfItems.get(index) + 1);
+            }
+        }
+
+        int numOfTransactions = transactions.size();
+        ArrayList<Itemset> frequentOneItemset = new ArrayList<>();
+        for (int i = 0; i != numOfItems.size(); ++i) {
+            if ((double)numOfItems.get(i) / numOfTransactions >= minsup) {
+                Itemset itemset = new Itemset(i);
+                frequentOneItemset.add(itemset);
+            }
+        }
+
+        System.out.println(minsup);
+        numOfItems.forEach(n -> System.out.print(n + "\t"));
+        System.out.println();
+        numOfItems.forEach(n -> System.out.print((double)n / numOfTransactions + "\t"));
+        System.out.println();
+        frequentOneItemset.forEach(i -> System.out.print(i + "\t"));
 
         return null;
     }
