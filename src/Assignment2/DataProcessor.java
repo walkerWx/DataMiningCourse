@@ -56,51 +56,63 @@ public class DataProcessor {
         }
 
         // Generate frequent 1-itemset
-        ArrayList<Integer> numOfItems = new ArrayList<>();
+        List<Integer> occurancesOfItems = new ArrayList<>();
         for (int i = 0; i != transactions.get(0).getNumOfItems(); ++i) {
-            numOfItems.add(0);
+            occurancesOfItems.add(0);
         }
 
         for (Transaction transaction : transactions) {
             for (int index : transaction.items()) {
-                numOfItems.set(index, numOfItems.get(index) + 1);
+                occurancesOfItems.set(index, occurancesOfItems.get(index) + 1);
             }
         }
 
         int numOfTransactions = transactions.size();
-        ArrayList<Itemset> frequentOneItemset = new ArrayList<>();
-        for (int i = 0; i != numOfItems.size(); ++i) {
-            if ((double)numOfItems.get(i) / numOfTransactions >= minsup) {
+        List<Itemset> frequentOneItemsets = new ArrayList<>();
+        for (int i = 0; i != occurancesOfItems.size(); ++i) {
+            if ((double)occurancesOfItems.get(i) / numOfTransactions >= minsup) {
                 Itemset itemset = new Itemset(i);
-                frequentOneItemset.add(itemset);
+                frequentOneItemsets.add(itemset);
             }
         }
 
-        System.out.println(minsup);
-        numOfItems.forEach(n -> System.out.print(n + "\t"));
-        System.out.println();
-        numOfItems.forEach(n -> System.out.print((double)n / numOfTransactions + "\t"));
-        System.out.println();
-        frequentOneItemset.forEach(i -> System.out.print(i + "\t"));
+        // A list of itemsets to store the frequent k-itemsets, k = 1, 2, ...
+        List<List<Itemset>> ListOfFrequentItemsets = new ArrayList<List<Itemset>>();
+        ListOfFrequentItemsets.add(new ArrayList<Itemset>());   // case: k = 0, we fill it with an empty itemsets
+        ListOfFrequentItemsets.add(frequentOneItemsets);        // case: k = 1
 
-        return null;
+        List<Itemset> candidates;
+        List<Itemset> frequentItemsets;
+        int k = 1;
+        while ((frequentItemsets = ListOfFrequentItemsets.get(k)) != null) {
+            candidates = prune(generateCandidates(frequentItemsets), frequentItemsets);
+            ListOfFrequentItemsets.add(determineFrequentItemsets(candidates, transactions, minsup));
+            k++;
+        }
+
+        // Union the frequent itemsets as result
+        List<Itemset> result = new ArrayList<>();
+        ListOfFrequentItemsets.forEach(itemsets -> result.addAll(itemsets));
+        return result;
     }
 
     // Generate C(k+1) by join itemset-pairs in F(k)
-    private ArrayList<Itemset> generateCandidates(ArrayList<Itemset> frequentItemsets) {
+    private static List<Itemset> generateCandidates(List<Itemset> frequentItemsets) {
         if (frequentItemsets.isEmpty() || frequentItemsets.size() == 1) {
             return null;
         }
+
+        Collections.sort(frequentItemsets);
         return null;
     }
 
     // Prune itemsets from C(k+1) that violate downward closure
-    private List<Itemset> prune(List<Itemset> candidates, List<Itemset> frequentItemsets) {
+    private static List<Itemset> prune(List<Itemset> candidates, List<Itemset> frequentItemsets) {
         return null;
     }
 
     // Determine F(k+1) by support counting on (C(K+1), T) and retaining itemsets from C(k+1) with support at least minsup
-    private List<Itemset> determineFrequentItemsets(List<Itemset> candicates, List<Transaction> transactions, double minsup) {
+    private static List<Itemset> determineFrequentItemsets(List<Itemset> candicates, List<Transaction> transactions, double minsup) {
         return null;
     }
 
