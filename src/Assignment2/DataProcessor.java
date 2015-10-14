@@ -45,7 +45,7 @@ public class DataProcessor {
             System.out.println();
         });
 
-        apriori(transactions, minsup);
+        // apriori(transactions, minsup);
     }
 
     // The Apriori Algorithm
@@ -125,7 +125,13 @@ public class DataProcessor {
 
     // Prune itemsets from C(k+1) that violate downward closure
     private static List<Itemset> prune(List<Itemset> candidates, List<Itemset> frequentItemsets) {
-        return null;
+        List<Itemset> prunedCandicates = new ArrayList<>();
+        for (Itemset candidate : candidates) {
+            if (frequentItemsets.containsAll(candidate.downwardClosure())) {
+                prunedCandicates.add(candidate);
+            }
+        }
+        return prunedCandicates;
     }
 
     // Determine F(k+1) by support counting on (C(K+1), T) and retaining itemsets from C(k+1) with support at least minsup

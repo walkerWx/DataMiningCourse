@@ -1,5 +1,8 @@
 package Assignment2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by walker on 15/10/14.
  */
@@ -23,6 +26,20 @@ public class Itemset implements Comparable<Itemset> {
 
     public Itemset(int i) {
         content = Character.toString((char) ('a' + i));
+    }
+
+    public List<Itemset> downwardClosure() {
+        if (content.length() <= 1) {
+            return new ArrayList<Itemset>();
+        }
+        List<Itemset> itemsets = new ArrayList<>();
+        Itemset itemset;
+        for (int i = 0; i != content.length(); ++i) {
+            itemset = new Itemset();
+            itemset.content = this.content.substring(0, i) + this.content.substring(i + 1);
+            itemsets.add(itemset);
+        }
+        return itemsets;
     }
 
     public static Itemset generateCandidate(Itemset s1, Itemset s2) {
@@ -52,5 +69,20 @@ public class Itemset implements Comparable<Itemset> {
     @Override
     public String toString() {
         return this.content;
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (that == this) {
+            return true;
+        }
+
+        if (!(that instanceof Itemset)) {
+            return false;
+        }
+
+        Itemset itemset = (Itemset)that;
+
+        return this.content.equals(itemset.content);
     }
 }
