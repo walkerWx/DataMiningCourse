@@ -70,7 +70,7 @@ public class DataProcessor {
         int numOfTransactions = transactions.size();
         List<Itemset> frequentOneItemsets = new ArrayList<>();
         for (int i = 0; i != occurancesOfItems.size(); ++i) {
-            if ((double)occurancesOfItems.get(i) / numOfTransactions >= minsup) {
+            if ((double) occurancesOfItems.get(i) / numOfTransactions >= minsup) {
                 Itemset itemset = new Itemset(i);
                 frequentOneItemsets.add(itemset);
             }
@@ -98,12 +98,29 @@ public class DataProcessor {
 
     // Generate C(k+1) by join itemset-pairs in F(k)
     private static List<Itemset> generateCandidates(List<Itemset> frequentItemsets) {
+
         if (frequentItemsets.isEmpty() || frequentItemsets.size() == 1) {
             return null;
         }
 
         Collections.sort(frequentItemsets);
-        return null;
+
+        List<Itemset> candidates = new ArrayList<>();
+        Itemset candidate;
+        for (int i = 0, j = 1; i != frequentItemsets.size(); ) {
+            while (j != frequentItemsets.size() && Itemset.generateCandidate(frequentItemsets.get(i), frequentItemsets.get(j)) != null) {
+                ++j;
+            }
+            for (int k = i; k != j; ++k) {
+                for (int l = k + 1; l != j; ++l) {
+                    candidates.add(Itemset.generateCandidate(frequentItemsets.get(k), frequentItemsets.get(l)));
+                }
+            }
+            i = j;
+            j++;
+        }
+
+        return candidates;
     }
 
     // Prune itemsets from C(k+1) that violate downward closure
