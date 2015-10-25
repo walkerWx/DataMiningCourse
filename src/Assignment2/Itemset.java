@@ -8,18 +8,19 @@ import java.util.List;
  */
 public class Itemset implements Comparable<Itemset> {
     private String content;
+    private int numOfItems;
 
     public Itemset() {
         this.content = null;
     }
 
     public Itemset(String s) {
-        content = "";
-
         s.replaceAll("\\s+", "");
+        content = "";
+        numOfItems = s.length();
         for (int i = 0; i != s.length(); ++i) {
             if (s.charAt(i) == '1') {
-                content += ('a' + i);
+                content += (char) ('a' + i);
             }
         }
     }
@@ -40,6 +41,14 @@ public class Itemset implements Comparable<Itemset> {
             itemsets.add(itemset);
         }
         return itemsets;
+    }
+
+    public int getItem(int index) {
+        return content.charAt(index) - 'a';
+    }
+
+    public int getNumOfItems(){
+        return numOfItems;
     }
 
     public static Itemset generateCandidate(Itemset s1, Itemset s2) {

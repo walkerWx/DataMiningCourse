@@ -77,22 +77,22 @@ public class DataProcessor {
         }
 
         // A list of itemsets to store the frequent k-itemsets, k = 1, 2, ...
-        List<List<Itemset>> ListOfFrequentItemsets = new ArrayList<List<Itemset>>();
-        ListOfFrequentItemsets.add(new ArrayList<Itemset>());   // case: k = 0, we fill it with an empty itemsets
-        ListOfFrequentItemsets.add(frequentOneItemsets);        // case: k = 1
+        List<List<Itemset>> listOfFrequentItemsets = new ArrayList<List<Itemset>>();
+        listOfFrequentItemsets.add(new ArrayList<Itemset>());   // case: k = 0, we fill it with an empty itemsets
+        listOfFrequentItemsets.add(frequentOneItemsets);        // case: k = 1
 
         List<Itemset> candidates;
         List<Itemset> frequentItemsets;
         int k = 1;
-        while ((frequentItemsets = ListOfFrequentItemsets.get(k)) != null) {
+        while ((frequentItemsets = listOfFrequentItemsets.get(k)) != null) {
             candidates = prune(generateCandidates(frequentItemsets), frequentItemsets);
-            ListOfFrequentItemsets.add(determineFrequentItemsets(candidates, transactions, minsup));
+            listOfFrequentItemsets.add(determineFrequentItemsets(candidates, transactions, minsup));
             k++;
         }
 
         // Union the frequent itemsets as result
         List<Itemset> result = new ArrayList<>();
-        ListOfFrequentItemsets.forEach(itemsets -> result.addAll(itemsets));
+        listOfFrequentItemsets.forEach(itemsets -> result.addAll(itemsets));
         return result;
     }
 
