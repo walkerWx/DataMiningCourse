@@ -8,25 +8,45 @@ import java.util.List;
  */
 public class Transaction implements Comparable<Transaction>{
     private String content;
-    private int numOfItems;
+    private int numOfTotalItems;
+    private int numOfContentItems;
 
     public Transaction(String s){
         content = "";
         s = s.replaceAll("\\s+","");
-        numOfItems = s.length();
+        numOfTotalItems= s.length();
         for(int i = 0; i != s.length(); ++i) {
             if (s.charAt(i) == '1') {
                 content += (char)('a'+ i);
             }
         }
+        numOfContentItems = content.length();
     }
 
     public boolean contain(int itemIndex) {
         return content.indexOf((char)('a' + itemIndex)) >= 0 ;
     }
 
-    public int getNumOfItems() {
-        return numOfItems;
+    public boolean containItemset(Itemset itemset) {
+        String itemContent = itemset.getContent();
+        for (char c : itemContent.toCharArray()) {
+            if (content.indexOf(c) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public int getNumOfTotalItems() {
+        return numOfTotalItems;
+    }
+
+    public int getNumOfContentItems()  {
+        return numOfContentItems;
+    }
+
+    public int getItem(int index) {
+        return content.charAt(index) - 'a';
     }
 
     public List<Integer> items() {
@@ -43,7 +63,13 @@ public class Transaction implements Comparable<Transaction>{
     }
 
     @Override
-    public String toString(){
-        return this.content;
+    public String toString() {
+        String s = "";
+        for (char c : content.toCharArray()) {
+            s += (c - 'a' + 1);
+            s += " ";
+        }
+        return s;
+//        return this.content;
     }
 }

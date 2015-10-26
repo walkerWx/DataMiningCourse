@@ -12,6 +12,7 @@ public class Itemset implements Comparable<Itemset> {
 
     public Itemset() {
         this.content = null;
+        numOfItems = 0;
     }
 
     public Itemset(String s) {
@@ -27,6 +28,7 @@ public class Itemset implements Comparable<Itemset> {
 
     public Itemset(int i) {
         content = Character.toString((char) ('a' + i));
+        numOfItems = 1;
     }
 
     public List<Itemset> downwardClosure() {
@@ -51,6 +53,10 @@ public class Itemset implements Comparable<Itemset> {
         return numOfItems;
     }
 
+    public String getContent() {
+        return content;
+    }
+
     public static Itemset generateCandidate(Itemset s1, Itemset s2) {
         if (s1.content.length() == 0 || s1.content.length() != s2.content.length() || s1.compareTo(s2) == 0) {
             return null;
@@ -63,6 +69,7 @@ public class Itemset implements Comparable<Itemset> {
             } else {
                 candidate.content = s1.content + s2.content.substring(s2.content.length() - 1);
             }
+            candidate.numOfItems = candidate.content.length();
             return candidate;
         }
 
@@ -77,7 +84,13 @@ public class Itemset implements Comparable<Itemset> {
 
     @Override
     public String toString() {
-        return this.content;
+        String s = "";
+        for (char c : content.toCharArray()) {
+            s += (c - 'a' + 1);
+            s += " ";
+        }
+        return s;
+//        return this.content;
     }
 
     @Override

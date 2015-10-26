@@ -1,11 +1,11 @@
 package Assignment2;
 
 import org.apache.commons.lang.UnhandledException;
+import org.apache.sanselan.common.ImageMetadata;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by walker on 15/10/11.
@@ -15,7 +15,7 @@ public class DataProcessor {
 
         // Minimum support value
         double minsup = 0.144;
-
+//        double minsup = 0.04;
         // Load data, you should set your own data file location here
         File data = new File("/Users/walker/Desktop/Courses/DataMining/Assignments/2/assignment2-data.txt");
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -39,13 +39,23 @@ public class DataProcessor {
         }
 
 
-        Collections.sort(transactions);
-        transactions.forEach(t -> {
-            t.items().forEach(item -> System.out.print(item + " "));
-            System.out.println();
-        });
+        List<Itemset> frequentItemset = apriori(transactions, minsup);
+        HashMap<Itemset, Integer> frequentCount = new HashMap<>();
+        for (Itemset itemset : frequentItemset) {
+            frequentCount.put(itemset, 0);
+        }
+        for (Transaction transaction : transactions) {
+            for (Itemset itemset : frequentItemset) {
+                if (transaction.containItemset(itemset)) {
+                    frequentCount.put(itemset, frequentCount.get(itemset) + 1);
+                }
+            }
+        }
 
-        // apriori(transactions, minsup);
+        for (Itemset itemset : frequentItemset) {
+            System.out.print(itemset);
+            System.out.println((double) frequentCount.get(itemset) / transactions.size());
+        }
     }
 
     // The Apriori Algorithm
@@ -57,7 +67,7 @@ public class DataProcessor {
 
         // Generate frequent 1-itemset
         List<Integer> occurancesOfItems = new ArrayList<>();
-        for (int i = 0; i != transactions.get(0).getNumOfItems(); ++i) {
+        for (int i = 0; i != transactions.get(0).getNumOfTotalItems(); ++i) {
             occurancesOfItems.add(0);
         }
 
@@ -76,31 +86,39 @@ public class DataProcessor {
             }
         }
 
+
         // A list of itemsets to store the frequent k-itemsets, k = 1, 2, ...
         List<List<Itemset>> listOfFrequentItemsets = new ArrayList<List<Itemset>>();
         listOfFrequentItemsets.add(new ArrayList<Itemset>());   // case: k = 0, we fill it with an empty itemsets
         listOfFrequentItemsets.add(frequentOneItemsets);        // case: k = 1
 
-        List<Itemset> candidates;
+        List<Itemset> prunedCandidates;
         List<Itemset> frequentItemsets;
         int k = 1;
         while ((frequentItemsets = listOfFrequentItemsets.get(k)) != null) {
-            candidates = prune(generateCandidates(frequentItemsets), frequentItemsets);
-            listOfFrequentItemsets.add(determineFrequentItemsets(candidates, transactions, minsup));
+            List<Itemset> newCandidates = generateCandidates(frequentItemsets);
+            prunedCandidates = prune(newCandidates, frequentItemsets);
+            List<Itemset> candidates = determineFrequentItemsets(prunedCandidates, transactions, minsup);
+            listOfFrequentItemsets.add(candidates);
             k++;
         }
 
         // Union the frequent itemsets as result
         List<Itemset> result = new ArrayList<>();
-        listOfFrequentItemsets.forEach(itemsets -> result.addAll(itemsets));
+        for (List<Itemset> list : listOfFrequentItemsets) {
+            if (list != null) {
+                result.addAll(list);
+            }
+        }
         return result;
     }
 
     // Generate C(k+1) by join itemset-pairs in F(k)
     private static List<Itemset> generateCandidates(List<Itemset> frequentItemsets) {
 
+
         if (frequentItemsets.isEmpty() || frequentItemsets.size() == 1) {
-            return null;
+            return new ArrayList<>();
         }
 
         Collections.sort(frequentItemsets);
@@ -113,7 +131,9 @@ public class DataProcessor {
             }
             for (int k = i; k != j; ++k) {
                 for (int l = k + 1; l != j; ++l) {
-                    candidates.add(Itemset.generateCandidate(frequentItemsets.get(k), frequentItemsets.get(l)));
+                    Itemset itemset = (Itemset.generateCandidate(frequentItemsets.get(k), frequentItemsets.get(l)));
+                    assert itemset != null;
+                    candidates.add(itemset);
                 }
             }
             i = j;
@@ -136,7 +156,34 @@ public class DataProcessor {
 
     // Determine F(k+1) by support counting on (C(K+1), T) and retaining itemsets from C(k+1) with support at least minsup
     private static List<Itemset> determineFrequentItemsets(List<Itemset> candicates, List<Transaction> transactions, double minsup) {
-        return null;
-    }
+        if (candicates.isEmpty()) {
+            return null;
+        }
 
+        HashTree hashTree = new HashTree(candicates, candicates.get(0).getNumOfItems());
+        HashMap<Itemset, Integer> frequentCount = new HashMap<>();
+        for (Itemset itemset : candicates) {
+            frequentCount.put(itemset, 0);
+        }
+
+        for (Transaction transaction : transactions) {
+            Set<Itemset> candidatesInTranscation = hashTree.candidatesInTransaction(transaction);
+            if (candidatesInTranscation == null) {
+                continue;
+            }
+            for (Itemset itemset : candidatesInTranscation) {
+                if (transaction.containItemset(itemset)) {
+                    frequentCount.put(itemset, frequentCount.get(itemset) + 1);
+                }
+            }
+        }
+
+        List<Itemset> result = new ArrayList<>();
+        for (Itemset itemset : candicates) {
+            if ((double) (frequentCount.get(itemset)) / transactions.size() >= minsup) {
+                result.add(itemset);
+            }
+        }
+        return result;
+    }
 }

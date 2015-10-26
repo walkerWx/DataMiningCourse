@@ -18,7 +18,8 @@ public class HashTree {
 
     public HashTree(List<Itemset> candidates, int numOfItems) {
 
-        this.threshold = (int) Math.sqrt(numOfItems);
+
+        this.threshold = Math.max((int) Math.sqrt(numOfItems),2);
         root = new TreeNode(threshold);
 
         // Build the hash tree
@@ -32,42 +33,53 @@ public class HashTree {
         this.threshold = root.threshold;
     }
 
-    public List<Itemset> candidatesInTransaction(Transaction transaction) {
-        return null;
+    public Set<Itemset> candidatesInTransaction(Transaction transaction) {
+
+
+        List<Itemset> candidatesList = dfs(0, transaction, root);
+        if (candidatesList == null) {
+            return null;
+        }
+        TreeSet<Itemset> candidates = new TreeSet<>(candidatesList);
+        return candidates;
     }
 
-    public void print() {
-        Stack<TreeNode> s = new Stack<>();
-        TreeNode tn;
-        HashTree hs;
-        s.push(root);
-        while (!s.empty()) {
-            tn = s.pop();
-            if (tn.isLeaf) {
-                System.out.println("A leaf node with depth:" + tn.depth + "---------------------------");
-                System.out.println("*");
-                for (Itemset itemset : tn.candidates) {
-                    System.out.println(itemset);
-                }
-                System.out.println("*");
-                System.out.println("end -----------------------------------\n");
-            } else {
-                for (TreeNode branch : tn.branches.values()) {
-                    s.push(branch);
-                }
-            }
+
+    private List<Itemset> dfs(int index, Transaction transaction, TreeNode treeNode) {
+
+        if (treeNode == null) {
+            return null;
         }
 
+        if (treeNode.isLeaf) {
+            return treeNode.candidates;
+        }
+
+        if (index >= transaction.getNumOfContentItems()) {
+            return null;
+        }
+
+        if (treeNode.isLeaf) {
+            return treeNode.candidates;
+        } else {
+            List<Itemset> result = new ArrayList<>();
+            TreeNode nextNode;
+            for (int i = index; i != transaction.getNumOfContentItems(); ++i) {
+                nextNode = treeNode.branches.get(hash(transaction, i));
+                List<Itemset> temp = dfs(i + 1, transaction, nextNode);
+                if (temp != null) {
+                    result.addAll(temp);
+                }
+            }
+            return result;
+        }
     }
+
 
     private void addCandidate(Itemset candidate) {
         root.insert(candidate);
     }
 
-    // Build the hash tree from the candidates
-    private void buildHashTree() {
-
-    }
 
     private class TreeNode {
         private int depth;
@@ -133,36 +145,14 @@ public class HashTree {
         }
 
 
-        int hash(Itemset itemset, int index) {
-            return itemset.getItem(index) % threshold;
-        }
     }
 
-    public static void main(String[] args) {
-        // Load data, you should set your own data file location here
-        File data = new File("/Users/walker/Desktop/data");
-        ArrayList<Itemset> candidates = new ArrayList<>();
-        ArrayList<String> items = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(data), "utf-8"))) {
-            String line;
-            // Load transactions
-            Itemset itemset;
-            while ((line = br.readLine()) != null) {
-                itemset = new Itemset(line);
-                candidates.add(itemset);
-            }
+    int hash(Itemset itemset, int index) {
+        return itemset.getItem(index) % threshold;
+    }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Collections.sort(candidates);
-        for (Itemset itemset : candidates)  {
-            System.out.println(itemset);
-        }
-
-        HashTree ht = new HashTree(candidates, candidates.get(0).getNumOfItems());
-        ht.print();
+    int hash(Transaction transaction, int index) {
+        return transaction.getItem(index) % threshold;
     }
 
 }
