@@ -1,4 +1,4 @@
-package Assignment3.KMeans;
+package Assignment3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,40 +8,57 @@ import java.util.Random;
  * Created by walker on 15/10/28.
  */
 public class Point {
-    private ArrayList<Double> features;
-    private int clusterNumber;
 
-    public Point(ArrayList features){
+    public static final int RANDOM_POINT_ID = -1;
+
+    private int id;
+    private int clusterId;
+    private int label;
+    private List<Double> features;
+
+    public Point(int id, List features) {
+        this.id = id;
         this.features = features;
     }
 
-    public Point(ArrayList features, int clusterNumber) {
+    public Point(int id, List features, int label) {
+        this.id = id;
         this.features = features;
-        this.clusterNumber = clusterNumber;
+        this.label = label;
+        this.clusterId = -1;
     }
 
-    public void setCluster(int clusterNumber) {
-        this.clusterNumber = clusterNumber;
+    public int getId() {
+        return this.id;
+    }
+
+    public void setCluster(int clusterId) {
+        this.clusterId = clusterId;
     }
 
     public int getCluster() {
-        return this.clusterNumber;
+        return this.clusterId;
+    }
+
+    public int getLabel() {
+        return this.label;
     }
 
     public List<Double> getFeatures() {
         return this.features;
     }
 
-    public int getFeaturesNumber() {
+    public int getDimension() {
         return features.size();
     }
 
-    protected static double distance(Point p, Point centroid) {
+    protected static double distance(Point a, Point b) {
         double sum = 0;
-        for (int i =0; i != p.features.size(); ++i) {
-            sum += Math.pow((p.features.get(i) - centroid.features.get(i)), 2);
+        for (int i = 0; i != a.features.size(); ++i) {
+            sum += Math.pow((a.features.get(i) - b.features.get(i)), 2);
         }
-        return Math.sqrt(sum);
+        return sum;
+//        return Math.sqrt(sum);
     }
 
     protected static Point createRandomPoint(double min, double max, int featureNumber) {
@@ -50,7 +67,7 @@ public class Point {
         for (int i = 0; i < featureNumber; ++i) {
             features.add(min + (max - min) * r.nextDouble());
         }
-        return new Point(features);
+        return new Point(RANDOM_POINT_ID, features);
     }
 
     @Override
@@ -58,8 +75,9 @@ public class Point {
         String s = "";
         s += "(";
         for (double feature : features) {
+            s += "\t";
             s += feature;
-            s += " , ";
+            s += "\t";
         }
         s += ")";
         return s;
@@ -69,6 +87,6 @@ public class Point {
     public boolean equals(Object that) {
         if (this == that) return true;
         if (!(that instanceof Point)) return false;
-        return this.features.equals(((Point)that).features);
+        return this.features.equals(((Point) that).features);
     }
 }
