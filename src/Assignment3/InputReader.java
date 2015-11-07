@@ -10,6 +10,7 @@ import java.util.List;
 public class InputReader {
 
     List<Point> points;
+    int nFeatures;
 
     public InputReader(String path) {
         File data = new File(path);
@@ -19,9 +20,9 @@ public class InputReader {
             int id = 0;
             while ((line = br.readLine()) != null) {
                 String[] featuresString = line.split(",");
-                int featuresNumber = featuresString.length - 1; // The last column represents the label of the corresponding example
+                nFeatures= featuresString.length - 1; // The last column represents the label of the corresponding example
                 ArrayList<Double> features = new ArrayList<>();
-                for (int i = 0; i < featuresNumber; ++i) {
+                for (int i = 0; i < nFeatures; ++i) {
                     features.add(Double.parseDouble(featuresString[i]));
                 }
                 int label = Integer.parseInt(featuresString[featuresString.length - 1]);
@@ -34,5 +35,23 @@ public class InputReader {
 
     public List<Point> getPoints() {
         return this.points;
+    }
+
+    public double[][] get2dArray() {
+        double[][] featuresArray = new double[points.size()][nFeatures];
+        for (int i = 0; i < points.size(); ++i) {
+            for (int j = 0; j < nFeatures; ++j) {
+                featuresArray[i][j] = points.get(i).getFeatures().get(j);
+            }
+        }
+        return featuresArray;
+    }
+
+    public int getDataSize() {
+        return points.size();
+    }
+
+    public int getFeatureSize() {
+        return nFeatures;
     }
 }

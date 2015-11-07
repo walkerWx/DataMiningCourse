@@ -1,8 +1,10 @@
-package Assignment3.KMeans;
+package Assignment3;
+
+import com.sun.glass.ui.SystemClipboard;
+import com.sun.tools.doclets.internal.toolkit.util.DocFinder;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Random;
 
@@ -15,25 +17,10 @@ public class KMeans {
     private List<Cluster> clusters;
 
     public KMeans(String filePath, int numOfClusters) {
-        points = new ArrayList<>();
-        clusters = new ArrayList<>();
 
-        // Load feature data
-        File data = new File(filePath);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(data), "utf-8"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] featuresString = line.split(",");
-                int featuresNumber = featuresString.length - 1; // The last column represents the label of the corresponding example
-                ArrayList<Double> features = new ArrayList<>();
-                for (int i = 0; i < featuresNumber; ++i) {
-                    features.add(Double.parseDouble(featuresString[i]));
-                }
-                points.add(new Point(features));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        InputReader ir = new InputReader(filePath);
+        points = ir.getPoints();
+        clusters = new ArrayList<>();
 
         // Create clusters and set random centroids
         List<Point> randomPoints = getRandomPoints(numOfClusters);
@@ -42,6 +29,7 @@ public class KMeans {
             cluster.setCentroid(randomPoints.get(i));
             clusters.add(cluster);
         }
+
     }
 
     public void calculate() {
@@ -68,11 +56,15 @@ public class KMeans {
         }
     }
 
+    public List<Point> getPoints() {
+        return this.points;
+    }
+
     private void assignCluster() {
         clearClusters();
         double max = Double.MAX_VALUE;
         double min = max;
-        int cluster = 0;
+        int clusterId = 0;
         double distance = 0.0;
         for (Point point : points) {
             min = max;
@@ -81,16 +73,16 @@ public class KMeans {
                 distance = Point.distance(point, c.getCentroid());
                 if (distance <= min) {
                     min = distance;
-                    cluster = i;
+                    clusterId = i;
                 }
             }
-            point.setCluster(cluster);
-            clusters.get(cluster).addPoint(point);
+            point.setCluster(clusterId);
+            clusters.get(clusterId).addPoint(point);
         }
     }
 
     private void clearClusters() {
-        for(Cluster cluster : clusters) {
+        for (Cluster cluster : clusters) {
             cluster.clear();
         }
     }
@@ -98,7 +90,7 @@ public class KMeans {
     private void updateCentroids() {
         for (Cluster cluster : clusters) {
             ArrayList<Double> centroidFeatures = new ArrayList<>();
-            int featuresNumber = points.get(0).getFeaturesNumber();
+            int featuresNumber = points.get(0).getDimension();
             for (int i = 0; i != featuresNumber; ++i) {
                 centroidFeatures.add(.0);
             }
@@ -111,7 +103,7 @@ public class KMeans {
             for (int i = 0; i != featuresNumber; ++i) {
                 centroidFeatures.set(i, centroidFeatures.get(i) / cluster.getPoints().size());
             }
-            Point centroid = new Point(centroidFeatures);
+            Point centroid = new Point(Point.RANDOM_POINT_ID, centroidFeatures);
             cluster.setCentroid(centroid);
         }
     }
@@ -149,5 +141,10 @@ public class KMeans {
         String filePath = "/Users/walker/Desktop/DataMining/mnist.txt";
         KMeans km = new KMeans(filePath, 10);
         km.calculate();
+        for (Point point : km.getPoints()) {
+            System.out.println("ID:\t" + point.getId() + "\tClusterID:\t" + point.getCluster() + "\tLabel:\t" + point.getLabel());
+        }
+        ClusterValidator cv = new ClusterValidator(km.getPoints());
+        System.out.print(cv.purity() + " " + cv.gini());
     }
 }

@@ -1,4 +1,4 @@
-package Assignment3.KMeans;
+package Assignment3;
 
 import java.util.ArrayList;
 import java.util.List;
