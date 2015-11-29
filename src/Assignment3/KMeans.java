@@ -1,10 +1,7 @@
 package Assignment3;
 
-import com.sun.glass.ui.SystemClipboard;
-import com.sun.tools.doclets.internal.toolkit.util.DocFinder;
-
-import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -31,6 +28,25 @@ public class KMeans {
         }
 
     }
+
+    public KMeans(double[][] data, int[] label, int numOfClusters) {
+        points = new ArrayList<>();
+        for (int i = 0; i < data.length; ++i) {
+            Point p = new Point(i, Arrays.asList(data[i]), label[i]);
+            points.add(p);
+        }
+        clusters = new ArrayList<>();
+
+        // Create clusters and set random centroids
+        List<Point> randomPoints = getRandomPoints(numOfClusters);
+        for (int i = 0; i < numOfClusters; ++i) {
+            Cluster cluster = new Cluster(i);
+            cluster.setCentroid(randomPoints.get(i));
+            clusters.add(cluster);
+        }
+
+    }
+
 
     public void calculate() {
         boolean finish = false;
