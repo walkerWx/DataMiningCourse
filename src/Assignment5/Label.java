@@ -13,4 +13,17 @@ public class Label {
     public int getLabel() {
         return this.label;
     }
+
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof Label)) {
+            return false;
+        }
+        return this.label == ((Label) that).label;
+    }
+
+    @Override
+    public int hashCode() {
+        return label;
+    }
 }
