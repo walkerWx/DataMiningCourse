@@ -15,7 +15,8 @@ public class AttributeSet {
     }
 
     public AttributeSet(List<Attribute> attributes) {
-        this.attributes = attributes;
+        this.attributes = new ArrayList<>();
+        this.attributes.addAll(attributes);
     }
 
     public AttributeSet(int n) {

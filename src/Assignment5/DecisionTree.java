@@ -24,11 +24,11 @@ public class DecisionTree {
     }
 
     private Node buildTreeRec(TrainingSet trainingSet, AttributeSet attributeSet) {
-        System.out.print("Buid tree rec called!" + " Training set size: " + trainingSet.size() + "\tAttributes: ");
-        for (Attribute attribute : attributeSet.getAttributes()) {
-            System.out.print(attribute.getAttributeIndex() + " ");
-        }
-        System.out.print("\n");
+//        System.out.print("Buid tree rec called!" + " Training set size: " + trainingSet.size() + "\tAttributes: ");
+//        for (Attribute attribute : attributeSet.getAttributes()) {
+//            System.out.print(attribute.getAttributeIndex() + " ");
+//        }
+//        System.out.print("\n");
 
         if (trainingSet.isEmpty()) {
             return new LeafNode(new Label(0));
@@ -39,7 +39,6 @@ public class DecisionTree {
         }
 
         if (attributeSet.isEmpty()) {
-            System.out.println("May be error here!");
             Map<Label, Integer> labelCount = new HashMap<>();
             for (Label label : trainingSet.getLabels()) {
                 if (labelCount.containsKey(label)) {
@@ -129,7 +128,7 @@ public class DecisionTree {
             Map<Double, Node> branches = new HashMap<>();
             branches.put(BranchNode.NO_MORE_THAN_KEY, buildTreeRec(partition.get(BranchNode.NO_MORE_THAN_KEY), attributeSet.removeAttribute(maxGainAttr)));
             branches.put(BranchNode.MORE_THAN_KEY, buildTreeRec(partition.get(BranchNode.MORE_THAN_KEY), attributeSet.removeAttribute(maxGainAttr)));
-            return new BranchNode(branches, maxGainAttr);
+            return new BranchNode(branches, maxGainAttr, threshold);
  }     }
 
     public void print() {
@@ -162,6 +161,9 @@ public class DecisionTree {
             System.out.println("Leaf node with label : " + ((LeafNode) node).label.getLabel());
         } else if (node instanceof BranchNode) {
             System.out.println("Branch node with attribute : " + ((BranchNode) node).attribute.getAttributeIndex());
+            if (!((BranchNode) node).attribute.isDiscrete()) {
+                System.out.println(" with threshold:" + ((BranchNode) node).threshold);
+            }
             for (Node branch : ((BranchNode) node).branches.values()) {
                 printNode(branch);
             }
@@ -275,8 +277,8 @@ public class DecisionTree {
     }
 
     public static void main(String[] args) {
-//        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
-        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
+        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
+//        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
 //        String path = "/Users/walker/Desktop/DataMining/mytest.txt";
         File fData = new File(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fData), "utf-8"))) {
