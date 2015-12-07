@@ -24,4 +24,14 @@ public class Attribute {
     public boolean isDiscrete() {
         return isDiscrete;
     }
+
+    @Override
+    public boolean equals(Object that) {
+        if (!(that instanceof Attribute)) {
+            return false;
+        }
+
+        return this.attributeIndex == ((Attribute) that).attributeIndex && this.isDiscrete == ((Attribute) that).isDiscrete;
+    }
 }
+

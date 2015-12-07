@@ -1,0 +1,83 @@
+package Assignment5;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by walker on 15/12/6.
+ */
+public class AdaBoost implements Classifier {
+
+    private List<DecisionTree> classifiers;
+    private List<Double> alphaList;
+
+    public AdaBoost(TrainingSet trainingSet, AttributeSet attributeSet, int rounds) {
+        List<Double> weights = new ArrayList<>();
+        for (int i = 0; i < trainingSet.size(); ++i) {
+            weights.add(1.0 / trainingSet.size());
+        }
+        classifiers = new ArrayList<>();
+        alphaList = new ArrayList<>();
+        double weightedErrorRate = 0.0;
+        for (int t = 0; t < rounds; ++t) {
+            DecisionTree decisionTree = new DecisionTree(trainingSet, attributeSet);
+            classifiers.add(decisionTree);
+
+            // calculate the weighted error rate
+            for (int i = 0; i < trainingSet.size(); ++i) {
+                if (decisionTree.classify(trainingSet.getItem(i)) != trainingSet.getLabel(i)) {
+                    weightedErrorRate += weights.get(i);
+                }
+            }
+
+            double alpha = 0.5 * Math.log((1 - weightedErrorRate) / weightedErrorRate);
+            alphaList.add(alpha);
+
+            // update weights
+            for (int i = 0; i < trainingSet.size(); ++i) {
+                if (decisionTree.classify(trainingSet.getItem(i)) != trainingSet.getLabel(i)) {
+                    weights.set(i, weights.get(i) * Math.exp(alpha));
+                } else {
+                    weights.set(i, (-1.0) * weights.get(i) * Math.exp(alpha));
+                }
+            }
+
+            // normalization
+            double sum = 0.0;
+            for (int i = 0; i < trainingSet.size(); ++i) {
+                sum += weights.get(i);
+            }
+            for (int i = 0; i < trainingSet.size(); ++i) {
+                weights.set(i, weights.get(i) / sum);
+            }
+
+            if (weightedErrorRate == 0 || weightedErrorRate >= 0.5) {
+                break;
+            }
+        }
+    }
+
+    public Label classify(List<Double> item) {
+        Label label = null;
+        Map<Label, Double> votes = new HashMap<>();
+        for (int i = 0; i < classifiers.size(); ++i) {
+            label = classifiers.get(i).classify(item);
+            if (votes.containsKey(label)) {
+                votes.put(label, votes.get(label) + alphaList.get(i));
+            } else {
+                votes.put(label, alphaList.get(i));
+            }
+        }
+        Label maxVotesLabel = null;
+        double maxVotes = 0.0;
+        for (Label candidate : votes.keySet()) {
+            if (votes.get(candidate) >= maxVotes) {
+                maxVotesLabel = candidate;
+                maxVotes = votes.get(candidate);
+            }
+        }
+        return maxVotesLabel;
+    }
+}

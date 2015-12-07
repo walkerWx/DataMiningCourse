@@ -1,6 +1,7 @@
 package Assignment5;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by walker on 15/12/1.
@@ -55,7 +56,7 @@ public class TrainingSet {
         return 0;
     }
 
-    public List<Double> getAttributeValues(Attribute attribute){
+    public List<Double> getAttributeValues(Attribute attribute) {
         Set<Double> s = new HashSet<>();
         int index = attribute.getAttributeIndex();
         for (int i = 0; i < data.size(); ++i) {
@@ -64,6 +65,23 @@ public class TrainingSet {
         List<Double> values = new ArrayList<>(s);
         Collections.sort(values);
         return values;
+    }
+
+    public TrainingSet randomSample(int size) {
+        TrainingSet randomSet = new TrainingSet();
+        List<Double> item;
+        Label label;
+        for (int i = 0; i < size; ++i) {
+            int randomIndex = ThreadLocalRandom.current().nextInt(0, data.size());
+            item = data.get(randomIndex);
+            label = labels.get(randomIndex);
+            randomSet.addItem(item, label);
+        }
+        return randomSet;
+    }
+
+    public TrainingSet randomSample() {
+        return this.randomSample(this.size());
     }
 
 

@@ -6,6 +6,10 @@ package Assignment5;
 public class Label {
     private int label;
 
+    public Label() {
+        this.label = -10;
+    }
+
     public Label(int label) {
         this.label = label;
     }

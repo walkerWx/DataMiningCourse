@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by walker on 15/12/1.
  */
-public class DecisionTree {
+public class DecisionTree implements Classifier {
     private Node root;
 
     public DecisionTree(TrainingSet trainingSet, AttributeSet attributeSet) {
@@ -129,7 +129,8 @@ public class DecisionTree {
             branches.put(BranchNode.NO_MORE_THAN_KEY, buildTreeRec(partition.get(BranchNode.NO_MORE_THAN_KEY), attributeSet.removeAttribute(maxGainAttr)));
             branches.put(BranchNode.MORE_THAN_KEY, buildTreeRec(partition.get(BranchNode.MORE_THAN_KEY), attributeSet.removeAttribute(maxGainAttr)));
             return new BranchNode(branches, maxGainAttr, threshold);
- }     }
+        }
+    }
 
     public void print() {
         printNode(root);
@@ -141,9 +142,11 @@ public class DecisionTree {
 
     private Label classify(List<Double> item, Node node) {
         if (node instanceof LeafNode) {
+            System.out.println("Reach leaf node: " + ((LeafNode) node).label.getLabel());
             return ((LeafNode) node).label;
         } else {
             Attribute attribute = ((BranchNode) node).attribute;
+            System.out.println("Classify with attribute: " + attribute.getAttributeIndex());
             if (attribute.isDiscrete()) {
                 return classify(item, ((BranchNode) node).branches.get(item.get(attribute.getAttributeIndex())));
             } else {
@@ -277,8 +280,8 @@ public class DecisionTree {
     }
 
     public static void main(String[] args) {
-        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
-//        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
+//        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
+        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
 //        String path = "/Users/walker/Desktop/DataMining/mytest.txt";
         File fData = new File(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fData), "utf-8"))) {
@@ -306,14 +309,20 @@ public class DecisionTree {
                 trainingSet.addItem(item, label);
             }
 
-            DecisionTree decisionTree = new DecisionTree(trainingSet, attributeSet);
-            int sameCount =0;
+//            RandomForest randomForest = new RandomForest(trainingSet, attributeSet);
+//            DecisionTree decisionTree = new DecisionTree(trainingSet.randomSample(), attributeSet.randomSample());
+            Classifier adaBoost = new AdaBoost(trainingSet, attributeSet, 100);
+            int sameCount = 0;
             for (int i = 0; i < trainingSet.size(); ++i) {
-                if (trainingSet.getLabel(i).getLabel() == decisionTree.classify(trainingSet.getItem(i)).getLabel()) {
+                assert trainingSet.getItem(i) != null && trainingSet.getLabel(i) != null;
+                if (trainingSet.getLabel(i).getLabel() == adaBoost.classify(trainingSet.getItem(i)).getLabel()) {
                     sameCount++;
                 }
+//                if (trainingSet.getLabel(i).getLabel() == randomForest.classify(trainingSet.getItem(i)).getLabel()) {
+//                    sameCount++;
+//                }
             }
-            System.out.println((double)sameCount / trainingSet.size());
+            System.out.println((double) sameCount / trainingSet.size());
 
         } catch (Exception e) {
             e.printStackTrace();
