@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by walker on 15/12/1.
@@ -329,27 +330,64 @@ public class DecisionTree implements Classifier {
                 trainingSet.addItem(item, label);
             }
 
+
             // 10 fold cross validation
             int N = 10;
+            double accuracy, mean, standardDeviation;
+            List<Double> accuracyList = new ArrayList<>();
             for (int i = 0; i < N; ++i) {
                 List<TrainingSet> crossValidationPartition = trainingSet.crossValidationPartition(N);
-                Classifier classifier = new RandomForest(crossValidationPartition.get(0), attributeSet);
+                TrainingSet crossValidationTrainingSet = new TrainingSet();
+                TrainingSet crossValidationTestingSet = new TrainingSet();
+                for (int j = 0; j < N; ++j) {
+                    if (j == i) {
+                        crossValidationTestingSet.append(crossValidationPartition.get(j));
+                    } else {
+                        crossValidationTrainingSet.append(crossValidationPartition.get(j));
+                    }
+                }
+                Classifier classifier = new RandomForest(crossValidationTrainingSet, attributeSet);
 //                Classifier classifier = new DecisionTree(crossValidationPartition.get(0), attributeSet);
 //                Classifier classifier = new AdaBoost(trainingSet, attributeSet, 100);
                 int sameCount = 0;
-                TrainingSet testSet = crossValidationPartition.get(1);
-                for (int j = 0; j < testSet.size(); ++j) {
-                    assert testSet.getItem(j) != null && testSet.getLabel(j) != null;
-                    if (testSet.getLabel(j).getLabel() == classifier.classify(testSet.getItem(j)).getLabel()) {
+                for (int j = 0; j < crossValidationTestingSet.size(); ++j) {
+                    assert crossValidationTestingSet.getItem(j) != null && crossValidationTestingSet.getLabel(j) != null;
+                    if (crossValidationTestingSet.getLabel(j).getLabel() == classifier.classify(crossValidationTestingSet.getItem(j)).getLabel()) {
                         sameCount++;
                     }
                 }
-                System.out.println((double) sameCount / testSet.size());
+                accuracy = (double) sameCount / crossValidationTestingSet.size();
+                accuracyList.add(accuracy);
             }
+            for (int i = 0; i < accuracyList.size(); ++i) {
+                System.out.println(accuracyList.get(i));
+            }
+            System.out.println("Mean: " + mean(accuracyList));
+            System.out.println("Standard deviation: " + standardDeviation(accuracyList));
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static double mean(List<Double> values) {
+        assert !values.isEmpty();
+        double sum = 0.0;
+        for (double v : values) {
+            sum += v;
+        }
+        return sum / values.size();
+    }
+
+    private static double standardDeviation(List<Double> values) {
+        assert !values.isEmpty();
+        double sum = 0.0;
+        double mean = mean(values);
+        for (double v : values) {
+            sum += Math.pow(v - mean, 2);
+        }
+        sum = sum / values.size();
+        return Math.sqrt(sum);
     }
 }

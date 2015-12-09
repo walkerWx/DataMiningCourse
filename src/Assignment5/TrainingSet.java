@@ -84,32 +84,44 @@ public class TrainingSet {
         return this.randomSample(this.size());
     }
 
-    public List<TrainingSet> crossValidationPartition(int size) {
-        int testSetSize = this.size() / size;
+    public List<TrainingSet> crossValidationPartition(int nPartition) {
 
-        if (testSetSize == 0) {
-            testSetSize = 1;
+        int setSize = this.size() / nPartition;
+        if (setSize == 0) {
+            setSize = 1;
         }
 
-        Set<Integer> testSetIndexes = new HashSet<>();
-        while (testSetIndexes.size() != testSetSize) {
-            testSetIndexes.add(ThreadLocalRandom.current().nextInt(0, data.size()));
-        }
+        Set<Integer> randomIndexes;
 
-        TrainingSet trainingSet = new TrainingSet();
-        TrainingSet testSet = new TrainingSet();
-        for (int i = 0; i < this.size(); ++i) {
-            if (testSetIndexes.contains(i)) {
-                testSet.addItem(data.get(i), labels.get(i));
-            } else {
-                trainingSet.addItem(data.get(i), labels.get(i));
+        List<List<Double>> dataCopy = new ArrayList<>();
+        dataCopy.addAll(data);
+        List<Label> labelsCopy = new ArrayList<>();
+        labelsCopy.addAll(labels);
+
+        List<TrainingSet> partition = new ArrayList<>();
+        TrainingSet ts;
+        for (int i = 0; i < nPartition - 1; ++i) {
+            int randomIndex;
+            ts = new TrainingSet();
+            for (int j = 0; j < setSize; ++j) {
+                randomIndex = ThreadLocalRandom.current().nextInt(0, dataCopy.size());
+                ts.addItem(dataCopy.remove(randomIndex), labelsCopy.remove(randomIndex));
             }
+            partition.add(ts);
         }
 
-        List<TrainingSet> result = new ArrayList<>();
-        result.add(trainingSet);
-        result.add(testSet);
-        return result;
+        // the remaining part
+        ts = new TrainingSet();
+        ts.data.addAll(dataCopy);
+        ts.labels.addAll(labelsCopy);
+        partition.add(ts);
+
+        return partition;
+    }
+
+    public void append(TrainingSet trainingSet) {
+        this.data.addAll(trainingSet.data);
+        this.labels.addAll(trainingSet.labels);
     }
 
 }
