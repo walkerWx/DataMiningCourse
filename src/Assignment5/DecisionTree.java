@@ -282,8 +282,8 @@ public class DecisionTree implements Classifier {
     }
 
     private class BranchNode extends Node {
-        public static final double NO_MORE_THAN_KEY = 0.0;
-        public static final double MORE_THAN_KEY = 1.0;
+        private static final double NO_MORE_THAN_KEY = 0.0;
+        private static final double MORE_THAN_KEY = 1.0;
         private Attribute attribute;
         private double threshold;
         private Map<Double, Node> branches;
@@ -301,8 +301,8 @@ public class DecisionTree implements Classifier {
     }
 
     public static void main(String[] args) {
-//        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
-        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
+        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
+//        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
 //        String path = "/Users/walker/Desktop/DataMining/mytest.txt";
         File fData = new File(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fData), "utf-8"))) {
@@ -346,9 +346,9 @@ public class DecisionTree implements Classifier {
                         crossValidationTrainingSet.append(crossValidationPartition.get(j));
                     }
                 }
-                Classifier classifier = new RandomForest(crossValidationTrainingSet, attributeSet);
-//                Classifier classifier = new DecisionTree(crossValidationPartition.get(0), attributeSet);
-//                Classifier classifier = new AdaBoost(trainingSet, attributeSet, 100);
+//                Classifier classifier = new RandomForest(crossValidationTrainingSet, attributeSet);
+//                Classifier classifier = new DecisionTree(crossValidationTrainingSet, attributeSet);
+                Classifier classifier = new AdaBoost(crossValidationTrainingSet, attributeSet, 100);
                 int sameCount = 0;
                 for (int j = 0; j < crossValidationTestingSet.size(); ++j) {
                     assert crossValidationTestingSet.getItem(j) != null && crossValidationTestingSet.getLabel(j) != null;

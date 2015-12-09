@@ -7,7 +7,7 @@ public class Label {
     private int label;
 
     public Label() {
-        this.label = -10;
+        this.label = Integer.MAX_VALUE;
     }
 
     public Label(int label) {

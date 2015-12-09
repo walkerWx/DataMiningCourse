@@ -67,23 +67,6 @@ public class TrainingSet {
         return values;
     }
 
-    public TrainingSet randomSample(int size) {
-        TrainingSet randomSet = new TrainingSet();
-        List<Double> item;
-        Label label;
-        for (int i = 0; i < size; ++i) {
-            int randomIndex = ThreadLocalRandom.current().nextInt(0, data.size());
-            item = data.get(randomIndex);
-            label = labels.get(randomIndex);
-            randomSet.addItem(item, label);
-        }
-        return randomSet;
-    }
-
-    public TrainingSet randomSample() {
-        return this.randomSample(this.size());
-    }
-
     public List<TrainingSet> crossValidationPartition(int nPartition) {
 
         int setSize = this.size() / nPartition;
@@ -124,4 +107,40 @@ public class TrainingSet {
         this.labels.addAll(trainingSet.labels);
     }
 
+    public TrainingSet randomSample(int size) {
+        TrainingSet result = new TrainingSet();
+        int randomIndex;
+        for (int i = 0; i < size; ++i) {
+            randomIndex = ThreadLocalRandom.current().nextInt(this.size());
+            result.addItem(data.get(randomIndex), labels.get(randomIndex));
+        }
+        return result;
+    }
+
+    public TrainingSet randomSample() {
+        return randomSample(this.size());
+    }
+
+    public TrainingSet weightedSample(List<Double> weights) {
+        List<Double> intervals = new ArrayList<>();
+        double current = 0.0;
+        for (int i = 0; i < weights.size(); ++i) {
+            current += weights.get(i);
+            intervals.add(current);
+        }
+
+        double random;
+        TrainingSet result = new TrainingSet();
+        for (int i = 0; i < this.size(); ++i) {
+            random = ThreadLocalRandom.current().nextDouble(current);
+            for (int j = 0; j < intervals.size(); ++j) {
+                if (intervals.get(j) > random) {
+                    result.addItem(data.get(j), labels.get(j));
+                    break;
+                }
+                continue;
+            }
+        }
+        return result;
+    }
 }

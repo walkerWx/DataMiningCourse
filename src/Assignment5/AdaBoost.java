@@ -18,16 +18,27 @@ public class AdaBoost implements Classifier {
         for (int i = 0; i < trainingSet.size(); ++i) {
             weights.add(1.0 / trainingSet.size());
         }
+        DecisionTree decisionTree ;
+//        int sameCount = 0;
+//        for (int j = 0; j < trainingSet.size(); ++j) {
+//            assert trainingSet.getItem(j) != null && trainingSet.getLabel(j) != null;
+//            if (trainingSet.getLabel(j) == decisionTree.classify(trainingSet.getItem(j))) {
+//                sameCount++;
+//            }
+//        }
+//        System.out.print((double) sameCount / trainingSet.size());
+
         classifiers = new ArrayList<>();
         alphaList = new ArrayList<>();
         double weightedErrorRate = 0.0;
         for (int t = 0; t < rounds; ++t) {
-            DecisionTree decisionTree = new DecisionTree(trainingSet, attributeSet);
+            decisionTree = new DecisionTree(trainingSet.weightedSample(weights), attributeSet);
             classifiers.add(decisionTree);
 
             // calculate the weighted error rate
+            weightedErrorRate = 0.0;
             for (int i = 0; i < trainingSet.size(); ++i) {
-                if (decisionTree.classify(trainingSet.getItem(i)) != trainingSet.getLabel(i)) {
+                if (decisionTree.classify(trainingSet.getItem(i)).getLabel() != trainingSet.getLabel(i).getLabel()) {
                     weightedErrorRate += weights.get(i);
                 }
             }
@@ -40,7 +51,7 @@ public class AdaBoost implements Classifier {
                 if (decisionTree.classify(trainingSet.getItem(i)) != trainingSet.getLabel(i)) {
                     weights.set(i, weights.get(i) * Math.exp(alpha));
                 } else {
-                    weights.set(i, (-1.0) * weights.get(i) * Math.exp(alpha));
+                    weights.set(i, weights.get(i) * Math.exp(-alpha));
                 }
             }
 
@@ -53,6 +64,14 @@ public class AdaBoost implements Classifier {
                 weights.set(i, weights.get(i) / sum);
             }
 
+            double ws = 0.0;
+            System.out.println("weighted error rate: " + weightedErrorRate);
+            System.out.println("alpha: " + alpha);
+            for (double weight : weights) {
+                System.out.format(" %3f", weight);
+                ws += weight;
+            }
+            System.out.print("\nSum of weights: " + ws + "\n");
             if (weightedErrorRate == 0 || weightedErrorRate >= 0.5) {
                 break;
             }
