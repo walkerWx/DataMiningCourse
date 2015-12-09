@@ -58,6 +58,8 @@ public class AttributeSet {
 
     public AttributeSet randomSample() {
         return this.randomSample((int) (0.5 * this.size()));
+//        return this.randomSample((int) (Math.sqrt(this.size())));
+//        return this.randomSample((int) (Math.log(this.size())) + 1);
     }
 
     public int size() {

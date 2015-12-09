@@ -17,6 +17,7 @@ public class RandomForest implements Classifier {
         // build decision trees
         for (int i = 0; i < FOREST_SIZE; ++i) {
             forest.add(new DecisionTree(trainingSet.randomSample(), attributeSet.randomSample()));
+//            forest.add(new DecisionTree(trainingSet.randomSample(), attributeSet));
         }
     }
 

@@ -38,6 +38,7 @@ public class DecisionTree implements Classifier {
             return new LeafNode(trainingSet.getLabels().get(0));
         }
 
+        // if there is no attribute left to classify, then construct a leaf node of label with most frequency
         if (attributeSet.isEmpty()) {
             Map<Label, Integer> labelCount = new HashMap<>();
             for (Label label : trainingSet.getLabels()) {
@@ -60,8 +61,9 @@ public class DecisionTree implements Classifier {
             return new LeafNode(mostFrequentLabel);
         }
 
+        // calculate the attribute with max gain value
         Attribute maxGainAttr = new Attribute();
-        double gain = 0.0, maxGain = 0.0;
+        double gain, maxGain = -1;
         double threshold = 0.0;
         for (Attribute attribute : attributeSet.getAttributes()) {
 
@@ -83,6 +85,7 @@ public class DecisionTree implements Classifier {
                 }
             }
         }
+
 
         Map<Double, TrainingSet> partition = new HashMap<>();
         List<Double> item;
@@ -142,13 +145,27 @@ public class DecisionTree implements Classifier {
 
     private Label classify(List<Double> item, Node node) {
         if (node instanceof LeafNode) {
-            System.out.println("Reach leaf node: " + ((LeafNode) node).label.getLabel());
+//            System.out.println("Reach leaf node: " + ((LeafNode) node).label.getLabel());
             return ((LeafNode) node).label;
         } else {
             Attribute attribute = ((BranchNode) node).attribute;
-            System.out.println("Classify with attribute: " + attribute.getAttributeIndex());
+//            System.out.println("Classify with attribute: " + attribute.getAttributeIndex());
             if (attribute.isDiscrete()) {
-                return classify(item, ((BranchNode) node).branches.get(item.get(attribute.getAttributeIndex())));
+                Node nextNode = ((BranchNode) node).branches.get(item.get(attribute.getAttributeIndex()));
+                if (nextNode == null) {
+                    // if the branch is null, then we find the branch which is closest to it
+                    Double attributeValue = item.get(attribute.getAttributeIndex());
+                    Double closestKey = 0.0;
+                    Double minDistance = Double.MAX_VALUE;
+                    for (Double key : ((BranchNode) node).branches.keySet()) {
+                        if (Math.abs(key - attributeValue) <= minDistance) {
+                            closestKey = key;
+                            minDistance = Math.abs(key - attributeValue);
+                        }
+                    }
+                    nextNode = ((BranchNode) node).branches.get(closestKey);
+                }
+                return classify(item, nextNode);
             } else {
                 if (item.get(attribute.getAttributeIndex()) <= ((BranchNode) node).threshold) {
                     return classify(item, ((BranchNode) node).branches.get(BranchNode.NO_MORE_THAN_KEY));
@@ -238,12 +255,15 @@ public class DecisionTree implements Classifier {
     private double gain(TrainingSet trainingSet, Attribute attribute) {
         assert attribute.isDiscrete();
         double gain = info(trainingSet) - info(trainingSet, attribute);
+        assert gain >= 0;
         return gain;
     }
 
     private double gain(TrainingSet trainingSet, Attribute attribute, double threshold) {
         assert !attribute.isDiscrete();
-        return info(trainingSet) - info(trainingSet, attribute, threshold);
+        double gain = info(trainingSet) - info(trainingSet, attribute, threshold);
+        assert gain >= 0;
+        return gain;
     }
 
 
@@ -309,20 +329,24 @@ public class DecisionTree implements Classifier {
                 trainingSet.addItem(item, label);
             }
 
-//            RandomForest randomForest = new RandomForest(trainingSet, attributeSet);
-//            DecisionTree decisionTree = new DecisionTree(trainingSet.randomSample(), attributeSet.randomSample());
-            Classifier adaBoost = new AdaBoost(trainingSet, attributeSet, 100);
-            int sameCount = 0;
-            for (int i = 0; i < trainingSet.size(); ++i) {
-                assert trainingSet.getItem(i) != null && trainingSet.getLabel(i) != null;
-                if (trainingSet.getLabel(i).getLabel() == adaBoost.classify(trainingSet.getItem(i)).getLabel()) {
-                    sameCount++;
+            // 10 fold cross validation
+            int N = 10;
+            for (int i = 0; i < N; ++i) {
+                List<TrainingSet> crossValidationPartition = trainingSet.crossValidationPartition(N);
+                Classifier classifier = new RandomForest(crossValidationPartition.get(0), attributeSet);
+//                Classifier classifier = new DecisionTree(crossValidationPartition.get(0), attributeSet);
+//                Classifier classifier = new AdaBoost(trainingSet, attributeSet, 100);
+                int sameCount = 0;
+                TrainingSet testSet = crossValidationPartition.get(1);
+                for (int j = 0; j < testSet.size(); ++j) {
+                    assert testSet.getItem(j) != null && testSet.getLabel(j) != null;
+                    if (testSet.getLabel(j).getLabel() == classifier.classify(testSet.getItem(j)).getLabel()) {
+                        sameCount++;
+                    }
                 }
-//                if (trainingSet.getLabel(i).getLabel() == randomForest.classify(trainingSet.getItem(i)).getLabel()) {
-//                    sameCount++;
-//                }
+                System.out.println((double) sameCount / testSet.size());
             }
-            System.out.println((double) sameCount / trainingSet.size());
+
 
         } catch (Exception e) {
             e.printStackTrace();
