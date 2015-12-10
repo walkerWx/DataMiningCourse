@@ -301,8 +301,8 @@ public class DecisionTree implements Classifier {
     }
 
     public static void main(String[] args) {
-        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
-//        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
+//        String path = "/Users/walker/Desktop/DataMining/german-assignment5.txt";
+        String path = "/Users/walker/Desktop/DataMining/breast-cancer-assignment5.txt";
 //        String path = "/Users/walker/Desktop/DataMining/mytest.txt";
         File fData = new File(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fData), "utf-8"))) {

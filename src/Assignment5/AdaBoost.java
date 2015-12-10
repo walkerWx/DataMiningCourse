@@ -19,14 +19,6 @@ public class AdaBoost implements Classifier {
             weights.add(1.0 / trainingSet.size());
         }
         DecisionTree decisionTree ;
-//        int sameCount = 0;
-//        for (int j = 0; j < trainingSet.size(); ++j) {
-//            assert trainingSet.getItem(j) != null && trainingSet.getLabel(j) != null;
-//            if (trainingSet.getLabel(j) == decisionTree.classify(trainingSet.getItem(j))) {
-//                sameCount++;
-//            }
-//        }
-//        System.out.print((double) sameCount / trainingSet.size());
 
         classifiers = new ArrayList<>();
         alphaList = new ArrayList<>();
